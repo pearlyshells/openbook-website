@@ -84,6 +84,7 @@
       text-decoration: none;
       min-width: 0;
     }
+    .brand svg { height: 34px; width: auto; display: block; }
     .brand img { height: 34px; width: auto; display: block; }
     .brand-logo-light { display: none !important; }
     .brand-logo-dark { display: block; }
@@ -655,7 +656,7 @@
       .container, .nav-inner { width: min(var(--max), calc(100% - 28px)); }
       .actions { flex-direction: column; align-items: stretch; }
       .btn { width: 100%; }
-      .brand img { height: 30px; }
+      .brand svg, .brand img { height: 30px; }
       h1 { font-size: 2.6rem; }
     }
   </style>
@@ -664,7 +665,12 @@
   <nav>
     <div class="nav-inner">
       <a href="#top" class="brand" aria-label="Openbook Health home">
-        <img src="/openbook-health-wordmark-light.svg" alt="Openbook Health" />
+        <svg viewBox="0 0 520 64" role="img" aria-label="Openbook Health" xmlns="http://www.w3.org/2000/svg">
+          <rect width="520" height="64" fill="transparent"/>
+          <text x="0" y="46" font-family="Georgia, 'Times New Roman', serif" font-size="48" font-weight="700" fill="#f4f1ec">open</text>
+          <text x="118" y="46" font-family="Georgia, 'Times New Roman', serif" font-size="48" font-weight="700" fill="#2f8f78">book</text>
+          <text x="243" y="46" font-family="Georgia, 'Times New Roman', serif" font-size="48" font-weight="700" fill="#f4f1ec">health</text>
+        </svg>
       </a>
       <ul class="nav-links">
         <li><a href="#problem">The Problem</a></li>
@@ -927,7 +933,12 @@
       <div class="footer-grid">
         <div>
           <a href="#top" class="brand">
-            <img src="/openbook-health-wordmark-light.svg" alt="Openbook Health" />
+            <svg viewBox="0 0 520 64" role="img" aria-label="Openbook Health" xmlns="http://www.w3.org/2000/svg">
+          <rect width="520" height="64" fill="transparent"/>
+          <text x="0" y="46" font-family="Georgia, 'Times New Roman', serif" font-size="48" font-weight="700" fill="#f4f1ec">open</text>
+          <text x="118" y="46" font-family="Georgia, 'Times New Roman', serif" font-size="48" font-weight="700" fill="#2f8f78">book</text>
+          <text x="243" y="46" font-family="Georgia, 'Times New Roman', serif" font-size="48" font-weight="700" fill="#f4f1ec">health</text>
+        </svg>
           </a>
           <div class="footer-copy">Healthcare price intelligence for self-funded employers. We find the gap between what a plan is paying and what it should be paying.</div>
         </div>
