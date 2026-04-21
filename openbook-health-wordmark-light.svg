@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="420" viewBox="0 0 1800 420" role="img" aria-label="Openbook Health">
+  <style>
+    .serif { font-family: "Georgia", "Times New Roman", serif; font-weight: 700; font-size: 170px; }
+  </style>
+  <rect width="100%" height="100%" fill="transparent"/>
+  <text x="90" y="250" class="serif" fill="#f4f1ec">open</text>
+  <text x="438" y="250" class="serif" fill="#1d7d68">book</text>
+  <text x="845" y="250" class="serif" fill="#f4f1ec"> health</text>
+</svg>

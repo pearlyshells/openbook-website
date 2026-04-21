@@ -1,496 +1,980 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Openbook Health — Healthcare Price Intelligence</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --navy: #080b12;
-    --navy-mid: #0e1422;
-    --navy-light: #141c2e;
-    --gold: #c9963a;
-    --gold-light: #e4b65a;
-    --white: #f4f1ec;
-    --white-dim: rgba(244,241,236,0.65);
-    --white-faint: rgba(244,241,236,0.2);
-    --rule: rgba(201,150,58,0.25);
-    --mono: 'JetBrains Mono', monospace;
-    --serif: 'DM Serif Display', serif;
-    --sans: 'Instrument Sans', sans-serif;
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    background: var(--navy);
-    color: var(--white);
-    font-family: var(--sans);
-    font-size: 16px;
-    line-height: 1.6;
-    overflow-x: hidden;
-  }
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(201,150,58,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(201,150,58,0.03) 1px, transparent 1px);
-    background-size: 60px 60px;
-    pointer-events: none;
-    z-index: 0;
-  }
-  nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px 48px;
-    background: rgba(8,11,18,0.85);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--rule);
-  }
-  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
-  .nav-logo-text { font-family: var(--serif); font-size: 1.2rem; color: var(--white); letter-spacing: -0.01em; }
-  .nav-links { display: flex; align-items: center; gap: 36px; list-style: none; }
-  .nav-links a { color: var(--white-dim); text-decoration: none; font-size: 0.82rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; transition: color 0.2s; }
-  .nav-links a:hover { color: var(--gold-light); }
-  .nav-cta { background: transparent; border: 1px solid var(--gold); color: var(--gold-light) !important; padding: 8px 20px; border-radius: 2px; transition: background 0.2s, color 0.2s !important; }
-  .nav-cta:hover { background: var(--gold) !important; color: var(--navy) !important; }
-  .hero {
-    position: relative;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 120px 48px 80px;
-    overflow: hidden;
-  }
-  .hero-radial { position: absolute; top: -20%; right: -10%; width: 700px; height: 700px; background: radial-gradient(circle, rgba(201,150,58,0.12) 0%, transparent 65%); pointer-events: none; }
-  .hero-tag { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 28px; display: flex; align-items: center; gap: 12px; }
-  .hero-tag::before { content: ''; display: inline-block; width: 24px; height: 1px; background: var(--gold); }
-  .hero h1 { font-family: var(--serif); font-size: clamp(2.8rem, 6vw, 5.2rem); line-height: 1.05; letter-spacing: -0.02em; max-width: 820px; margin-bottom: 32px; color: var(--white); }
-  .hero h1 em { font-style: italic; color: var(--gold-light); }
-  .hero-sub { font-size: 1.1rem; color: var(--white-dim); max-width: 520px; line-height: 1.7; margin-bottom: 48px; }
-  .hero-actions { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-  .hero-stat-row { display: flex; gap: 48px; margin-top: 72px; padding-top: 40px; border-top: 1px solid var(--rule); flex-wrap: wrap; }
-  .hero-stat-num { font-family: var(--serif); font-size: 2.4rem; color: var(--gold-light); line-height: 1; margin-bottom: 6px; }
-  .hero-stat-label { font-size: 0.78rem; color: var(--white-dim); letter-spacing: 0.06em; text-transform: uppercase; }
-  .btn-primary { background: var(--gold); color: var(--navy); border: none; padding: 14px 32px; font-family: var(--sans); font-size: 0.9rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; border-radius: 2px; text-decoration: none; display: inline-block; transition: background 0.2s, transform 0.15s; }
-  .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
-  .btn-ghost { background: transparent; color: var(--white-dim); border: 1px solid var(--white-faint); padding: 14px 32px; font-family: var(--sans); font-size: 0.9rem; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; cursor: pointer; border-radius: 2px; text-decoration: none; display: inline-block; transition: border-color 0.2s, color 0.2s; }
-  .btn-ghost:hover { border-color: var(--gold); color: var(--gold-light); }
-  .marquee-wrap { background: var(--gold); overflow: hidden; padding: 12px 0; position: relative; z-index: 1; }
-  .marquee-track { display: flex; white-space: nowrap; animation: marquee 28s linear infinite; }
-  .marquee-item { display: inline-flex; align-items: center; gap: 16px; padding: 0 32px; font-family: var(--mono); font-size: 0.72rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--navy); }
-  .marquee-item::after { content: '◆'; font-size: 0.5rem; opacity: 0.5; }
-  @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-  section { position: relative; z-index: 1; }
-  .container { max-width: 1140px; margin: 0 auto; padding: 0 48px; }
-  .section-pad { padding: 100px 0; }
-  .section-label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
-  .section-label::before { content: ''; display: inline-block; width: 20px; height: 1px; background: var(--gold); }
-  .section-title { font-family: var(--serif); font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 20px; color: var(--white); }
-  .section-title em { font-style: italic; color: var(--gold-light); }
-  .section-body { font-size: 1.05rem; color: var(--white-dim); max-width: 560px; line-height: 1.75; }
-  .problem-section { background: var(--navy-mid); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
-  .problem-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
-  .problem-right { display: flex; flex-direction: column; gap: 28px; }
-  .insight-card { background: var(--navy-light); border: 1px solid var(--rule); border-left: 3px solid var(--gold); padding: 24px 28px; border-radius: 2px; }
-  .insight-card-num { font-family: var(--serif); font-size: 2rem; color: var(--gold-light); margin-bottom: 6px; }
-  .insight-card-text { font-size: 0.9rem; color: var(--white-dim); line-height: 1.6; }
-  .comparison-bar { margin: 8px 0; }
-  .comparison-label { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--white-dim); margin-bottom: 6px; font-family: var(--mono); }
-  .bar-track { height: 10px; background: var(--navy); border-radius: 2px; overflow: hidden; }
-  .bar-fill { height: 100%; border-radius: 2px; }
-  .bar-fill.ppo { background: #c0392b; width: 90%; }
-  .bar-fill.cash { background: var(--gold); width: 46%; }
-  .bar-fill.mcare { background: rgba(201,150,58,0.35); width: 16%; }
-  .process-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-top: 60px; }
-  .process-step { background: var(--navy); padding: 40px 36px; position: relative; overflow: hidden; }
-  .process-step::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--gold); transform: scaleX(0); transform-origin: left; transition: transform 0.4s ease; }
-  .process-step:hover::before { transform: scaleX(1); }
-  .step-num { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.2em; color: var(--gold); margin-bottom: 20px; text-transform: uppercase; }
-  .step-title { font-family: var(--serif); font-size: 1.4rem; color: var(--white); margin-bottom: 14px; line-height: 1.2; }
-  .step-body { font-size: 0.88rem; color: var(--white-dim); line-height: 1.7; }
-  .results-section { background: var(--navy-mid); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
-  .results-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
-  .case-study { background: var(--navy-light); border: 1px solid var(--rule); padding: 48px; border-radius: 2px; position: relative; overflow: hidden; }
-  .case-study::after { content: '"'; position: absolute; top: 16px; right: 24px; font-family: var(--serif); font-size: 8rem; color: var(--gold); opacity: 0.06; line-height: 1; }
-  .case-label { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.2em; color: var(--gold); text-transform: uppercase; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
-  .case-label::before { content: ''; width: 8px; height: 8px; background: var(--gold); border-radius: 50%; }
-  .case-result { font-family: var(--serif); font-size: 3rem; color: var(--gold-light); line-height: 1; margin-bottom: 10px; }
-  .case-context { font-size: 0.88rem; color: var(--white-dim); margin-bottom: 28px; line-height: 1.6; }
-  .case-divider { width: 100%; height: 1px; background: var(--rule); margin: 24px 0; }
-  .case-detail { display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 10px; }
-  .case-detail-label { color: var(--white-dim); }
-  .case-detail-value { color: var(--white); font-weight: 600; font-family: var(--mono); }
-  .metrics-grid { display: grid; grid-template-columns: 1fr; }
-  .metric-row { display: flex; align-items: center; gap: 20px; padding: 20px 0; border-bottom: 1px solid var(--rule); }
-  .metric-row:last-child { border-bottom: none; }
-  .metric-content { flex: 1; }
-  .metric-title { font-size: 0.9rem; font-weight: 600; color: var(--white); margin-bottom: 3px; }
-  .metric-desc { font-size: 0.8rem; color: var(--white-dim); }
-  .metric-value { font-family: var(--mono); font-size: 0.85rem; color: var(--gold); text-align: right; }
-  .audience-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 56px; }
-  .audience-card { border: 1px solid var(--rule); padding: 32px; border-radius: 2px; transition: border-color 0.25s; }
-  .audience-card:hover { border-color: var(--gold); }
-  .audience-title { font-family: var(--serif); font-size: 1.2rem; color: var(--white); margin-bottom: 10px; }
-  .audience-body { font-size: 0.85rem; color: var(--white-dim); line-height: 1.65; }
-  .audience-list { list-style: none; margin-top: 14px; display: flex; flex-direction: column; gap: 6px; }
-  .audience-list li { font-size: 0.8rem; color: var(--white-dim); padding-left: 16px; position: relative; }
-  .audience-list li::before { content: '→'; position: absolute; left: 0; color: var(--gold); font-size: 0.7rem; }
-  .about-section { background: var(--navy-mid); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
-  .about-body p { font-size: 1.05rem; color: var(--white-dim); line-height: 1.8; margin-bottom: 20px; }
-  .cta-section { background: linear-gradient(135deg, var(--navy-mid) 0%, #0a0e18 100%); border-top: 1px solid var(--rule); text-align: center; padding: 120px 48px; position: relative; overflow: hidden; }
-  .cta-section::before { content: ''; position: absolute; bottom: -30%; left: 50%; transform: translateX(-50%); width: 800px; height: 400px; background: radial-gradient(ellipse, rgba(201,150,58,0.08) 0%, transparent 70%); pointer-events: none; }
-  .cta-section .section-label { justify-content: center; }
-  .cta-section .section-title { max-width: 680px; margin: 0 auto 20px; }
-  .cta-section .section-body { margin: 0 auto 48px; text-align: center; max-width: 480px; }
-  .cta-actions { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
-  footer { background: var(--navy); border-top: 1px solid var(--rule); padding: 56px 48px 40px; }
-  .footer-grid { max-width: 1140px; margin: 0 auto; display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 40px; padding-bottom: 48px; border-bottom: 1px solid var(--rule); }
-  .footer-brand-text { font-size: 0.85rem; color: var(--white-dim); line-height: 1.7; margin-top: 14px; max-width: 240px; }
-  .footer-col-title { font-size: 0.72rem; font-family: var(--mono); letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; }
-  .footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-  .footer-links a { color: var(--white-dim); text-decoration: none; font-size: 0.88rem; transition: color 0.2s; }
-  .footer-links a:hover { color: var(--gold-light); }
-  .footer-bottom { max-width: 1140px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding-top: 28px; font-size: 0.78rem; color: rgba(244,241,236,0.3); flex-wrap: wrap; gap: 12px; }
-  .footer-legal { display: flex; gap: 24px; }
-  .footer-legal a { color: inherit; text-decoration: none; }
-  .footer-legal a:hover { color: var(--white-dim); }
-  .fade-up { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
-  .fade-up.visible { opacity: 1; transform: translateY(0); }
-  .fade-up-delay-1 { transition-delay: 0.1s; }
-  .fade-up-delay-2 { transition-delay: 0.2s; }
-  @media (max-width: 900px) {
-    nav { padding: 16px 24px; }
-    .nav-links { display: none; }
-    .hero { padding: 100px 24px 60px; }
-    .container { padding: 0 24px; }
-    .problem-grid, .results-layout { grid-template-columns: 1fr; gap: 40px; }
-    .process-steps { grid-template-columns: 1fr; }
-    .audience-grid { grid-template-columns: 1fr; }
-    .footer-grid { grid-template-columns: 1fr 1fr; }
-    .cta-section { padding: 80px 24px; }
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Openbook Health — Healthcare Price Intelligence for Self-Funded Employers</title>
+  <meta name="description" content="Openbook Health helps self-funded employers identify healthcare overpayment and act on it using claims analysis, published hospital pricing data, and direct contracting strategy." />
+  <meta name="theme-color" content="#080b12" />
+  <link rel="icon" type="image/svg+xml" href="/logo-kit-favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #080b12;
+      --navy-mid: #0e1422;
+      --navy-light: #141c2e;
+      --gold: #c9963a;
+      --gold-light: #e4b65a;
+      --gold-pale: #f5dea0;
+      --white: #f4f1ec;
+      --white-dim: rgba(244,241,236,0.72);
+      --white-faint: rgba(244,241,236,0.16);
+      --rule: rgba(201,150,58,0.22);
+      --shadow: 0 16px 48px rgba(0,0,0,0.28);
+      --sans: 'Instrument Sans', sans-serif;
+      --serif: 'DM Serif Display', serif;
+      --mono: 'JetBrains Mono', monospace;
+      --max: 1160px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--white);
+      background: var(--navy);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(201,150,58,0.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201,150,58,0.028) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    a { color: inherit; }
+    img { max-width: 100%; display: block; }
+
+    .container {
+      width: min(var(--max), calc(100% - 48px));
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+      background: rgba(8,11,18,0.86);
+      border-bottom: 1px solid var(--rule);
+    }
+    .nav-inner {
+      width: min(var(--max), calc(100% - 48px));
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 18px 0;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      min-width: 0;
+    }
+    .brand img { height: 34px; width: auto; display: block; }
+    .brand-logo-light { display: none !important; }
+    .brand-logo-dark { display: block; }
+    .brand-text { display: none; }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: var(--white-dim);
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .nav-links a:hover { color: var(--gold-light); }
+    .nav-links .cta-link {
+      border: 1px solid var(--gold);
+      color: var(--gold-light);
+      padding: 10px 18px;
+      border-radius: 2px;
+    }
+    .nav-links .cta-link:hover {
+      background: var(--gold);
+      color: var(--navy);
+    }
+
+    .hero {
+      padding: 96px 0 72px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -180px;
+      top: -60px;
+      width: 660px;
+      height: 660px;
+      background: radial-gradient(circle, rgba(201,150,58,0.14) 0%, transparent 66%);
+      pointer-events: none;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--gold);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .eyebrow::before {
+      content: "";
+      width: 24px;
+      height: 1px;
+      background: var(--gold);
+    }
+    h1 {
+      margin: 0 0 24px;
+      font-family: var(--serif);
+      font-size: clamp(3rem, 5.9vw, 5.3rem);
+      line-height: 1.02;
+      letter-spacing: -0.03em;
+      max-width: 980px;
+    }
+    h1 em, h2 em { color: var(--gold-light); font-style: italic; }
+    .hero-sub {
+      max-width: 720px;
+      color: var(--white-dim);
+      font-size: 1.08rem;
+      line-height: 1.8;
+      margin-bottom: 34px;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 52px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 50px;
+      padding: 0 24px;
+      border-radius: 2px;
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transition: transform .18s ease, background .18s ease, color .18s ease, border-color .18s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary {
+      background: var(--gold);
+      color: var(--navy);
+      border: 1px solid var(--gold);
+    }
+    .btn-primary:hover { background: var(--gold-light); border-color: var(--gold-light); }
+    .btn-secondary {
+      border: 1px solid var(--white-faint);
+      color: var(--white-dim);
+    }
+    .btn-secondary:hover { border-color: var(--gold); color: var(--gold-light); }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px;
+      padding-top: 28px;
+      border-top: 1px solid var(--rule);
+    }
+    .stat {
+      padding: 18px 0 0;
+    }
+    .stat-num {
+      font-family: var(--serif);
+      color: var(--gold-light);
+      font-size: clamp(2rem, 3vw, 2.6rem);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .stat-label {
+      color: var(--white-dim);
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .marquee {
+      background: var(--gold);
+      color: var(--navy);
+      overflow: hidden;
+      white-space: nowrap;
+      padding: 12px 0;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .marquee-track {
+      display: inline-block;
+      animation: marquee 26s linear infinite;
+      padding-left: 100%;
+    }
+    .marquee-track span {
+      margin-right: 28px;
+    }
+    .marquee-track span::after {
+      content: "◆";
+      margin-left: 28px;
+      opacity: .55;
+    }
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-100%); }
+    }
+
+    section {
+      padding: 100px 0;
+      position: relative;
+      z-index: 1;
+    }
+    .panel {
+      background: var(--navy-mid);
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+    }
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--gold);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    .section-label::before {
+      content: "";
+      width: 20px;
+      height: 1px;
+      background: var(--gold);
+    }
+    h2 {
+      margin: 0 0 16px;
+      font-family: var(--serif);
+      font-size: clamp(2rem, 4vw, 3.3rem);
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+    }
+    .section-intro {
+      max-width: 650px;
+      color: var(--white-dim);
+      font-size: 1.03rem;
+      line-height: 1.78;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1.02fr .98fr;
+      gap: 56px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--navy-light);
+      border: 1px solid var(--rule);
+      box-shadow: var(--shadow);
+      border-radius: 2px;
+    }
+
+    .insight-stack {
+      display: grid;
+      gap: 18px;
+    }
+    .insight {
+      padding: 24px 26px;
+      border-left: 3px solid var(--gold);
+    }
+    .insight-value {
+      font-family: var(--serif);
+      color: var(--gold-light);
+      font-size: 2rem;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .insight-copy {
+      color: var(--white-dim);
+      font-size: .92rem;
+      line-height: 1.65;
+    }
+
+    .comparison {
+      padding: 28px;
+      margin-top: 8px;
+    }
+    .comparison-head {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      margin-bottom: 18px;
+    }
+    .bar {
+      margin: 14px 0;
+    }
+    .bar-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 8px;
+      font-size: 0.78rem;
+      color: var(--white-dim);
+      font-family: var(--mono);
+    }
+    .bar-track {
+      height: 12px;
+      background: var(--navy);
+      overflow: hidden;
+      border-radius: 999px;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 999px;
+    }
+    .ppo { width: 90%; background: #b24a3a; }
+    .cash { width: 46%; background: var(--gold); }
+    .medicare { width: 16%; background: rgba(201,150,58,0.34); }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 1px;
+      margin-top: 54px;
+      border: 1px solid var(--rule);
+      background: var(--rule);
+    }
+    .step {
+      background: var(--navy);
+      padding: 34px;
+      position: relative;
+    }
+    .step::before {
+      content: "";
+      position: absolute;
+      left: 0; right: 0; top: 0;
+      height: 2px;
+      background: var(--gold);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .25s ease;
+    }
+    .step:hover::before { transform: scaleX(1); }
+    .step-num {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--gold);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .step h3 {
+      margin: 0 0 12px;
+      font-family: var(--serif);
+      font-size: 1.38rem;
+      line-height: 1.15;
+    }
+    .step p {
+      margin: 0;
+      color: var(--white-dim);
+      font-size: .91rem;
+      line-height: 1.72;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: .95fr 1.05fr;
+      gap: 56px;
+      align-items: start;
+    }
+    .metric-list {
+      margin-top: 34px;
+      display: grid;
+      gap: 18px;
+    }
+    .metric-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: center;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--rule);
+    }
+    .metric-row:last-child { border-bottom: 0; }
+    .metric-title {
+      color: var(--white);
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+    .metric-desc {
+      color: var(--white-dim);
+      font-size: .86rem;
+    }
+    .metric-value {
+      color: var(--gold);
+      font-family: var(--mono);
+      font-size: .88rem;
+      font-weight: 600;
+    }
+    .case-study {
+      padding: 42px;
+      position: relative;
+      overflow: hidden;
+    }
+    .case-study::after {
+      content: '"';
+      position: absolute;
+      top: 0;
+      right: 20px;
+      font-family: var(--serif);
+      font-size: 9rem;
+      color: rgba(201,150,58,0.08);
+      line-height: 1;
+    }
+    .case-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: .68rem;
+      color: var(--gold);
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .case-label::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+    }
+    .case-amount {
+      font-family: var(--serif);
+      color: var(--gold-light);
+      font-size: clamp(2.8rem, 5vw, 4rem);
+      line-height: 1;
+      margin-bottom: 10px;
+    }
+    .case-copy {
+      color: var(--white-dim);
+      font-size: .96rem;
+      line-height: 1.7;
+      margin-bottom: 24px;
+      max-width: 560px;
+    }
+    .case-detail {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 10px 0;
+      border-top: 1px solid var(--rule);
+      color: var(--white-dim);
+      font-size: .84rem;
+    }
+    .case-detail strong {
+      color: var(--white);
+      font-family: var(--mono);
+      font-weight: 500;
+    }
+
+    .audience-grid {
+      margin-top: 52px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 22px;
+    }
+    .audience {
+      padding: 30px;
+    }
+    .audience h3 {
+      margin: 0 0 10px;
+      font-family: var(--serif);
+      font-size: 1.26rem;
+    }
+    .audience p {
+      margin: 0 0 16px;
+      color: var(--white-dim);
+      font-size: .9rem;
+      line-height: 1.72;
+    }
+    .audience ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 8px;
+    }
+    .audience li {
+      position: relative;
+      padding-left: 16px;
+      color: var(--white-dim);
+      font-size: .82rem;
+    }
+    .audience li::before {
+      content: "→";
+      position: absolute;
+      left: 0;
+      color: var(--gold);
+    }
+
+    .about-copy {
+      max-width: 780px;
+    }
+    .about-copy p {
+      color: var(--white-dim);
+      font-size: 1rem;
+      line-height: 1.82;
+      margin: 0 0 18px;
+    }
+    .about-copy p:last-child { margin-bottom: 0; }
+
+    .cta {
+      text-align: center;
+      padding: 120px 0;
+      overflow: hidden;
+    }
+    .cta::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: -180px;
+      width: 900px;
+      height: 420px;
+      background: radial-gradient(ellipse, rgba(201,150,58,0.09) 0%, transparent 68%);
+      pointer-events: none;
+    }
+    .cta .section-label {
+      justify-content: center;
+    }
+    .cta h2, .cta .section-intro {
+      margin-left: auto;
+      margin-right: auto;
+      text-align: center;
+    }
+
+    footer {
+      border-top: 1px solid var(--rule);
+      padding: 52px 0 28px;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr 1fr;
+      gap: 30px;
+      padding-bottom: 34px;
+      border-bottom: 1px solid var(--rule);
+    }
+    .footer-title {
+      color: var(--gold);
+      font-family: var(--mono);
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .15em;
+      margin-bottom: 14px;
+    }
+    .footer-copy {
+      color: var(--white-dim);
+      max-width: 280px;
+      font-size: .88rem;
+      line-height: 1.75;
+      margin-top: 14px;
+    }
+    .footer-links {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 10px;
+    }
+    .footer-links a {
+      text-decoration: none;
+      color: var(--white-dim);
+      font-size: .88rem;
+    }
+    .footer-links a:hover { color: var(--gold-light); }
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding-top: 22px;
+      color: rgba(244,241,236,0.4);
+      font-size: .78rem;
+      flex-wrap: wrap;
+    }
+    .fade-up {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 980px) {
+      .nav-links { display: none; }
+      .stat-grid, .steps, .audience-grid, .footer-grid, .results-grid, .two-col {
+        grid-template-columns: 1fr;
+      }
+      .case-study { padding: 32px; }
+      section { padding: 78px 0; }
+      .hero { padding: 72px 0 58px; }
+    }
+    @media (max-width: 640px) {
+      .container, .nav-inner { width: min(var(--max), calc(100% - 28px)); }
+      .actions { flex-direction: column; align-items: stretch; }
+      .btn { width: 100%; }
+      .brand img { height: 30px; }
+      h1 { font-size: 2.6rem; }
+    }
+  </style>
 </head>
 <body>
-
-<nav>
-  <a href="#" class="nav-logo">
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="4" y="6" width="10" height="20" rx="1" stroke="#c9963a" stroke-width="1.5"/>
-      <rect x="18" y="6" width="10" height="20" rx="1" stroke="#c9963a" stroke-width="1.5"/>
-      <line x1="14" y1="16" x2="18" y2="16" stroke="#c9963a" stroke-width="1.5"/>
-      <circle cx="9" cy="13" r="1.5" fill="#c9963a"/>
-      <circle cx="23" cy="13" r="1.5" fill="#c9963a"/>
-    </svg>
-    <span class="nav-logo-text">Openbook Health</span>
-  </a>
-  <ul class="nav-links">
-    <li><a href="#problem">The Problem</a></li>
-    <li><a href="#how">How It Works</a></li>
-    <li><a href="#results">Results</a></li>
-    <li><a href="#about">About</a></li>
-    <li><a href="#contact" class="nav-cta">Get Analysis</a></li>
-  </ul>
-</nav>
-
-<section class="hero">
-  <div class="hero-radial"></div>
-  <div class="hero-tag">Healthcare Price Intelligence &middot; Self-Funded Employers</div>
-  <h1>Your PPO network is probably<br><em>costing you more</em><br>than cash pay.</h1>
-  <p class="hero-sub">Openbook Health delivers rigorous price transparency analysis for self-funded employers — revealing the gap between what you're paying and what you could pay.</p>
-  <div class="hero-actions">
-    <a href="#contact" class="btn-primary">Get Your Free Analysis</a>
-    <a href="#how" class="btn-ghost">See How It Works</a>
-  </div>
-  <div class="hero-stat-row">
-    <div class="hero-stat">
-      <div class="hero-stat-num">590%</div>
-      <div class="hero-stat-label">Avg. PPO rate vs. Medicare<br>for outpatient surgery</div>
-    </div>
-    <div class="hero-stat">
-      <div class="hero-stat-num">$1.58M</div>
-      <div class="hero-stat-label">Savings identified<br>for a 2,000-life plan</div>
-    </div>
-    <div class="hero-stat">
-      <div class="hero-stat-num">271%</div>
-      <div class="hero-stat-label">True cash-pay rate<br>vs. Medicare baseline</div>
-    </div>
-  </div>
-</section>
-
-<div class="marquee-wrap">
-  <div class="marquee-track">
-    <span class="marquee-item">Price Transparency</span>
-    <span class="marquee-item">Self-Funded Employers</span>
-    <span class="marquee-item">Direct Contracting</span>
-    <span class="marquee-item">ERISA Fiduciary Duty</span>
-    <span class="marquee-item">MS-DRG Analysis</span>
-    <span class="marquee-item">Cash-Pay Optimization</span>
-    <span class="marquee-item">Stop-Loss Strategy</span>
-    <span class="marquee-item">Benefits Intelligence</span>
-    <span class="marquee-item">Price Transparency</span>
-    <span class="marquee-item">Self-Funded Employers</span>
-    <span class="marquee-item">Direct Contracting</span>
-    <span class="marquee-item">ERISA Fiduciary Duty</span>
-    <span class="marquee-item">MS-DRG Analysis</span>
-    <span class="marquee-item">Cash-Pay Optimization</span>
-    <span class="marquee-item">Stop-Loss Strategy</span>
-    <span class="marquee-item">Benefits Intelligence</span>
-  </div>
-</div>
-
-<section class="problem-section section-pad" id="problem">
-  <div class="container">
-    <div class="problem-grid">
-      <div class="fade-up">
-        <div class="section-label">The Problem</div>
-        <h2 class="section-title">The network your broker sold you is working<br><em>against you.</em></h2>
-        <p class="section-body">PPO networks were designed to give insurers leverage — not to save your plan money. In most cases, "negotiated rates" are still multiples of what a self-funded employer with the right intelligence could pay directly.</p>
-        <br>
-        <p class="section-body">Federal price transparency rules now require hospitals to publish their actual rates. Openbook translates that data into actionable savings intelligence — before your next renewal.</p>
-      </div>
-      <div class="problem-right fade-up fade-up-delay-1">
-        <div class="insight-card">
-          <div class="insight-card-num">590%</div>
-          <div class="insight-card-text">Outpatient surgery billed at 590% of Medicare under a standard PPO chargemaster — before "negotiation"</div>
-        </div>
-        <div style="margin-top:24px;">
-          <div style="font-size:0.72rem;font-family:var(--mono);color:var(--gold);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:16px;">Rate Comparison — Outpatient Surgery</div>
-          <div class="comparison-bar">
-            <div class="comparison-label"><span>PPO Negotiated Rate</span><span>590% Medicare</span></div>
-            <div class="bar-track"><div class="bar-fill ppo"></div></div>
-          </div>
-          <div class="comparison-bar" style="margin-top:12px;">
-            <div class="comparison-label"><span>Cash-Pay Rate (direct)</span><span>271% Medicare</span></div>
-            <div class="bar-track"><div class="bar-fill cash"></div></div>
-          </div>
-          <div class="comparison-bar" style="margin-top:12px;">
-            <div class="comparison-label"><span>Medicare Baseline</span><span>100%</span></div>
-            <div class="bar-track"><div class="bar-fill mcare"></div></div>
-          </div>
-          <div style="font-size:0.72rem;color:var(--white-dim);margin-top:12px;font-family:var(--mono);">Based on Openbook analysis for a 2,000-covered-life plan.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section-pad" id="how">
-  <div class="container">
-    <div class="fade-up">
-      <div class="section-label">How It Works</div>
-      <h2 class="section-title">From claims data to <em>direct savings.</em></h2>
-      <p class="section-body">Three phases. Concrete numbers at every step. No guesswork, no generalities.</p>
-    </div>
-    <div class="process-steps fade-up fade-up-delay-1">
-      <div class="process-step">
-        <div class="step-num">Phase 01</div>
-        <div class="step-title">Price<br>Discovery</div>
-        <div class="step-body">We pull your claims data alongside hospital price transparency files to map every procedure against what cash-pay actually costs at your target facilities. No assumptions — published rates only.</div>
-      </div>
-      <div class="process-step">
-        <div class="step-num">Phase 02</div>
-        <div class="step-title">Gap<br>Analysis</div>
-        <div class="step-body">We quantify the spread between your current PPO rates and available cash-pay or direct-contract rates, procedure by procedure, facility by facility. We express it in dollars, not percentages.</div>
-      </div>
-      <div class="process-step">
-        <div class="step-num">Phase 03</div>
-        <div class="step-title">Steerage &amp;<br>Negotiation</div>
-        <div class="step-body">We build a pilot procedure list, clinical steerage framework, and direct contracting playbook. You walk into your next renewal — or your first direct contract — with data the hospital's CFO hasn't seen you use before.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="results-section section-pad" id="results">
-  <div class="container">
-    <div class="results-layout">
-      <div class="fade-up">
-        <div class="section-label">Client Results</div>
-        <h2 class="section-title">What the data<br>actually showed.</h2>
-        <p class="section-body">Every engagement produces a specific, defensible savings number — grounded in published hospital data and ERISA-aligned fiduciary analysis.</p>
-        <div class="metrics-grid" style="margin-top:40px;">
-          <div class="metric-row">
-            <div class="metric-content">
-              <div class="metric-title">Outpatient Surgery</div>
-              <div class="metric-desc">Colonoscopy, EGD, limited echo — validated cash-pay pilots</div>
-            </div>
-            <div class="metric-value">&#8722;54%</div>
-          </div>
-          <div class="metric-row">
-            <div class="metric-content">
-              <div class="metric-title">Sleep Studies</div>
-              <div class="metric-desc">High-volume procedure with significant cash-pay gap</div>
-            </div>
-            <div class="metric-value">&#8722;61%</div>
-          </div>
-          <div class="metric-row">
-            <div class="metric-content">
-              <div class="metric-title">MS-DRG Restructure</div>
-              <div class="metric-desc">Inpatient direct contracting vs. PPO chargemaster</div>
-            </div>
-            <div class="metric-value">&#8722;46%</div>
-          </div>
-        </div>
-      </div>
-      <div class="fade-up fade-up-delay-1">
-        <div class="case-study">
-          <div class="case-label">Case Study &middot; Confidential</div>
-          <div class="case-result">$1.58M</div>
-          <div class="case-context">In projected annual savings identified for a 2,000-covered-life self-funded employer — based on shifting select outpatient procedures to validated cash-pay rates.</div>
-          <div class="case-divider"></div>
-          <div class="case-detail"><span class="case-detail-label">Plan size</span><span class="case-detail-value">2,000 covered lives</span></div>
-          <div class="case-detail"><span class="case-detail-label">Current outpatient rate</span><span class="case-detail-value">590% Medicare</span></div>
-          <div class="case-detail"><span class="case-detail-label">Cash-pay rate</span><span class="case-detail-value">271% Medicare</span></div>
-          <div class="case-divider"></div>
-          <div style="font-size:0.78rem;color:var(--white-dim);font-style:italic;">Results based on published hospital price transparency data and Openbook analysis. Individual results may vary.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section-pad">
-  <div class="container">
-    <div class="fade-up">
-      <div class="section-label">Who We Serve</div>
-      <h2 class="section-title">Built for the people <em>accountable</em><br>for benefits spend.</h2>
-    </div>
-    <div class="audience-grid">
-      <div class="audience-card fade-up">
-        <div class="audience-title">Self-Funded Employers</div>
-        <div class="audience-body">You bear 100% of claims risk. You deserve 100% of the price intelligence. Openbook gives HR and Finance leaders a defensible basis for every benefits decision.</div>
-        <ul class="audience-list">
-          <li>200–5,000 covered lives</li>
-          <li>ERISA fiduciary compliance support</li>
-          <li>Renewal negotiation intelligence</li>
-        </ul>
-      </div>
-      <div class="audience-card fade-up fade-up-delay-1">
-        <div class="audience-title">Benefits Brokers &amp; Advisors</div>
-        <div class="audience-body">Differentiate your book with data-driven transparency analysis. Bring your clients a savings finding before renewal — and they never question your value again.</div>
-        <ul class="audience-list">
-          <li>Fiduciary advisor partnerships</li>
-          <li>White-label analysis available</li>
-          <li>Health Rosetta-aligned methodology</li>
-        </ul>
-      </div>
-      <div class="audience-card fade-up fade-up-delay-2">
-        <div class="audience-title">Stop-Loss &amp; Captive Carriers</div>
-        <div class="audience-body">Price transparency intelligence reduces your exposure. Openbook's procedure-level analysis helps underwriters and captive managers price risk with precision.</div>
-        <ul class="audience-list">
-          <li>MS-DRG procedure benchmarking</li>
-          <li>Cash-pay pilot validation</li>
-          <li>Reference-based pricing support</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="about-section section-pad" id="about">
-  <div class="container">
-    <div class="about-body fade-up" style="max-width:760px;">
-      <div class="section-label">About</div>
-      <h2 class="section-title">We built Openbook because<br>we found the <em>gap.</em></h2>
-      <p>Openbook Health was founded after a simple, uncomfortable discovery: for a 2,000-life self-funded employer, the "negotiated" PPO rates were consistently — and significantly — higher than cash pay. The employer was paying more by being in the network.</p>
-      <p>We built a Services-as-Software model to make this intelligence operational, not theoretical. We don't sell software licenses. We deliver findings, frameworks, and fiduciary cover — so plan sponsors can act on their legal obligations with confidence.</p>
-      <p>Openbook works at the intersection of federal price transparency data, direct contracting strategy, and ERISA fiduciary best practices. We keep our client roster small and our analysis precise.</p>
-      <div style="margin-top:32px;display:flex;gap:16px;flex-wrap:wrap;">
-        <a href="#contact" class="btn-primary">Work With Us</a>
-        <a href="https://www.linkedin.com/in/pearly-chen/" target="_blank" class="btn-ghost">LinkedIn &#8594;</a>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="cta-section" id="contact">
-  <div style="position:relative;z-index:1;">
-    <div class="section-label">Get Started</div>
-    <h2 class="section-title">Find out what your plan<br>is <em>actually</em> paying.</h2>
-    <p class="section-body">Free initial analysis for qualifying self-funded employers. We'll run your top procedures against published hospital rates and show you the gap.</p>
-    <div class="cta-actions">
-      <a href="mailto:pearly@openbookhealth.co?subject=Free%20Analysis%20Request" class="btn-primary">Request Free Analysis</a>
-      <a href="mailto:pearly@openbookhealth.co" class="btn-ghost">pearly&#64;openbookhealth.co</a>
-    </div>
-    <div style="margin-top:48px;font-family:var(--mono);font-size:0.7rem;color:rgba(244,241,236,0.25);letter-spacing:0.1em;">
-      TYPICALLY RESPONDS WITHIN 24 HOURS &middot; SOUTH FLORIDA BASED &middot; SERVING EMPLOYERS NATIONALLY
-    </div>
-  </div>
-</section>
-
-<footer>
-  <div class="footer-grid">
-    <div>
-      <a href="#" class="nav-logo" style="display:inline-flex;margin-bottom:4px;">
-        <svg width="28" height="28" viewBox="0 0 32 32" fill="none" style="margin-right:10px;">
-          <rect x="4" y="6" width="10" height="20" rx="1" stroke="#c9963a" stroke-width="1.5"/>
-          <rect x="18" y="6" width="10" height="20" rx="1" stroke="#c9963a" stroke-width="1.5"/>
-          <line x1="14" y1="16" x2="18" y2="16" stroke="#c9963a" stroke-width="1.5"/>
-          <circle cx="9" cy="13" r="1.5" fill="#c9963a"/>
-          <circle cx="23" cy="13" r="1.5" fill="#c9963a"/>
-        </svg>
-        <span style="font-family:var(--serif);font-size:1.1rem;color:var(--white);">Openbook Health</span>
+  <nav>
+    <div class="nav-inner">
+      <a href="#top" class="brand" aria-label="Openbook Health home">
+        <img src="/openbook-health-wordmark-light.svg" alt="Openbook Health" />
       </a>
-      <p class="footer-brand-text">Healthcare price intelligence for self-funded employers. We find the gap between what you're paying and what you should pay.</p>
-    </div>
-    <div>
-      <div class="footer-col-title">Services</div>
-      <ul class="footer-links">
-        <li><a href="#how">Price Discovery</a></li>
-        <li><a href="#how">Gap Analysis</a></li>
-        <li><a href="#how">Direct Contracting</a></li>
-        <li><a href="#how">Stop-Loss Advisory</a></li>
-      </ul>
-    </div>
-    <div>
-      <div class="footer-col-title">Company</div>
-      <ul class="footer-links">
-        <li><a href="#about">About</a></li>
+      <ul class="nav-links">
+        <li><a href="#problem">The Problem</a></li>
+        <li><a href="#how">How It Works</a></li>
         <li><a href="#results">Results</a></li>
-        <li><a href="https://www.linkedin.com/in/pearly-chen/" target="_blank">LinkedIn</a></li>
-        <li><a href="#contact">Contact</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact" class="cta-link">Request Analysis</a></li>
       </ul>
     </div>
-    <div>
-      <div class="footer-col-title">Contact</div>
-      <ul class="footer-links">
-        <li><a href="mailto:pearly@openbookhealth.co">pearly&#64;openbookhealth.co</a></li>
-        <li><a href="#contact">Request Analysis</a></li>
-        <li><a href="#">South Florida, USA</a></li>
-      </ul>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <span>&copy; 2025 Openbook Health LLC. All rights reserved.</span>
-    <div class="footer-legal">
-      <a href="#">Privacy Policy</a>
-      <a href="#">Terms of Service</a>
-      <a href="#">Disclaimer</a>
-    </div>
-  </div>
-</footer>
+  </nav>
 
-<script>
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) entry.target.classList.add('visible');
-    });
-  }, { threshold: 0.08 });
-  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
-  window.addEventListener('scroll', () => {
-    document.querySelector('nav').style.borderBottomColor =
-      window.scrollY > 60 ? 'rgba(201,150,58,0.35)' : 'rgba(201,150,58,0.25)';
-  });
-</script>
+  <main id="top">
+    <section class="hero">
+      <div class="container">
+        <div class="eyebrow">Healthcare Price Intelligence · Self-Funded Employers</div>
+        <h1>Self-funded employers are often paying <em>more through PPO contracts</em> than hospitals publish as cash rates.</h1>
+        <p class="hero-sub">
+          Openbook Health helps plan sponsors identify healthcare overpayment and act on it using claims analysis,
+          published hospital pricing data, and direct contracting strategy.
+        </p>
+        <div class="actions">
+          <a class="btn btn-primary" href="#contact">Request Free Analysis</a>
+          <a class="btn btn-secondary" href="#how">See How It Works</a>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <div class="stat-num">590%</div>
+            <div class="stat-label">Sample PPO rate vs. Medicare<br>for outpatient surgery</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">$1.58M</div>
+            <div class="stat-label">Projected annual savings identified<br>for a 2,000-life plan</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">271%</div>
+            <div class="stat-label">Published cash-pay benchmark<br>vs. Medicare baseline</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span>Self-Funded Employers</span>
+        <span>Claims Analysis</span>
+        <span>Price Transparency</span>
+        <span>Direct Contracting</span>
+        <span>ERISA Decision Support</span>
+        <span>Stop-Loss Strategy</span>
+        <span>Procedure-Level Benchmarking</span>
+        <span>Self-Funded Employers</span>
+        <span>Claims Analysis</span>
+        <span>Price Transparency</span>
+        <span>Direct Contracting</span>
+        <span>ERISA Decision Support</span>
+        <span>Stop-Loss Strategy</span>
+        <span>Procedure-Level Benchmarking</span>
+      </div>
+    </div>
+
+    <section id="problem" class="panel">
+      <div class="container two-col">
+        <div class="fade-up">
+          <div class="section-label">The Problem</div>
+          <h2>Negotiated rates do not necessarily mean <em>better rates.</em></h2>
+          <p class="section-intro">
+            Many self-funded employers assume their PPO contract protects them from overpaying. In practice,
+            published hospital pricing can reveal the opposite: reimbursement may exceed available cash-pay or direct-contracting benchmarks by a wide margin.
+          </p>
+          <p class="section-intro">
+            Openbook turns public pricing data and claims data into decision-ready intelligence before renewal, repricing,
+            provider negotiation, or targeted steerage.
+          </p>
+        </div>
+        <div class="fade-up">
+          <div class="insight-stack">
+            <div class="card insight">
+              <div class="insight-value">590%</div>
+              <div class="insight-copy">Illustrative outpatient surgery reimbursement at 590% of Medicare under a conventional PPO contract.</div>
+            </div>
+            <div class="card comparison">
+              <div class="comparison-head">Illustrative rate comparison — outpatient surgery</div>
+              <div class="bar">
+                <div class="bar-top"><span>PPO negotiated rate</span><span>590% Medicare</span></div>
+                <div class="bar-track"><div class="bar-fill ppo"></div></div>
+              </div>
+              <div class="bar">
+                <div class="bar-top"><span>Published cash-pay benchmark</span><span>271% Medicare</span></div>
+                <div class="bar-track"><div class="bar-fill cash"></div></div>
+              </div>
+              <div class="bar">
+                <div class="bar-top"><span>Medicare baseline</span><span>100%</span></div>
+                <div class="bar-track"><div class="bar-fill medicare"></div></div>
+              </div>
+              <div style="margin-top:12px;color:var(--white-dim);font-size:.76rem;font-family:var(--mono);">
+                Based on an Openbook analysis framework for a 2,000-covered-life self-funded plan.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how">
+      <div class="container">
+        <div class="fade-up">
+          <div class="section-label">How It Works</div>
+          <h2>From claims data to <em>actionable savings strategy.</em></h2>
+          <p class="section-intro">Three steps. Defensible numbers. Clear next actions.</p>
+        </div>
+        <div class="steps fade-up">
+          <article class="step">
+            <div class="step-num">Phase 01</div>
+            <h3>Price Discovery</h3>
+            <p>We analyze claims against published hospital pricing files to identify what the plan paid, what comparable cash-pay rates show, and where meaningful variation exists.</p>
+          </article>
+          <article class="step">
+            <div class="step-num">Phase 02</div>
+            <h3>Gap Analysis</h3>
+            <p>We quantify overpayment at the procedure, facility, and service-line level and translate that variance into estimated dollar impact and prioritized opportunity areas.</p>
+          </article>
+          <article class="step">
+            <div class="step-num">Phase 03</div>
+            <h3>Action Strategy</h3>
+            <p>We develop a targeted strategy that can include renewal leverage, provider negotiation, steerage, cash-pay pilots, direct contracting, and fiduciary-ready decision support.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="results" class="panel">
+      <div class="container results-grid">
+        <div class="fade-up">
+          <div class="section-label">Results</div>
+          <h2>What published pricing data <em>revealed.</em></h2>
+          <p class="section-intro">
+            Each engagement is built around auditable findings tied to real plan spend and published provider pricing.
+          </p>
+          <div class="metric-list">
+            <div class="metric-row">
+              <div>
+                <div class="metric-title">Outpatient surgery</div>
+                <div class="metric-desc">Validated cash-pay comparisons surfaced material savings opportunity across shoppable procedures.</div>
+              </div>
+              <div class="metric-value">−54%</div>
+            </div>
+            <div class="metric-row">
+              <div>
+                <div class="metric-title">Sleep studies</div>
+                <div class="metric-desc">High-volume utilization with meaningful reimbursement spread relative to published benchmarks.</div>
+              </div>
+              <div class="metric-value">−61%</div>
+            </div>
+            <div class="metric-row">
+              <div>
+                <div class="metric-title">MS-DRG restructure</div>
+                <div class="metric-desc">Inpatient direct-contracting benchmarks materially below legacy PPO reimbursement patterns.</div>
+              </div>
+              <div class="metric-value">−46%</div>
+            </div>
+          </div>
+        </div>
+        <div class="fade-up">
+          <aside class="card case-study">
+            <div class="case-label">Case Study · Confidential</div>
+            <div class="case-amount">$1.58M</div>
+            <div class="case-copy">
+              Projected annual savings identified for a 2,000-covered-life self-funded employer based on selected outpatient procedures benchmarked against published hospital cash-pay rates.
+            </div>
+            <div class="case-detail"><span>Plan size</span><strong>2,000 covered lives</strong></div>
+            <div class="case-detail"><span>Sample PPO outpatient rate</span><strong>590% Medicare</strong></div>
+            <div class="case-detail"><span>Published cash-pay benchmark</span><strong>271% Medicare</strong></div>
+            <div class="case-detail"><span>Primary use case</span><strong>Renewal leverage + direct contracting</strong></div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="fade-up">
+          <div class="section-label">Who We Serve</div>
+          <h2>Built for stakeholders <em>accountable</em> for healthcare spend.</h2>
+          <p class="section-intro">
+            Openbook is designed for organizations and partners that bear real claims risk or need sharper procedure-level price intelligence.
+          </p>
+        </div>
+        <div class="audience-grid">
+          <div class="card audience fade-up">
+            <h3>Self-Funded Employers</h3>
+            <p>Procedure-level price intelligence to support cost containment, provider negotiation, benefits strategy, and fiduciary oversight.</p>
+            <ul>
+              <li>Plan sponsor decision support</li>
+              <li>Renewal and repricing leverage</li>
+              <li>Targeted steerage opportunities</li>
+            </ul>
+          </div>
+          <div class="card audience fade-up">
+            <h3>Benefits Advisors & Consultants</h3>
+            <p>Published pricing analysis that helps bring clients clearer numbers, better renewal strategy, and more defensible recommendations.</p>
+            <ul>
+              <li>Client-specific savings narratives</li>
+              <li>White-label analysis support</li>
+              <li>Sharper employer conversations</li>
+            </ul>
+          </div>
+          <div class="card audience fade-up">
+            <h3>Stop-Loss & Captive Partners</h3>
+            <p>Procedure-level pricing intelligence to improve visibility into cost variation, exposure, and disciplined cost-containment strategy.</p>
+            <ul>
+              <li>Benchmarking support</li>
+              <li>Risk-aware purchasing strategy</li>
+              <li>High-cost procedure visibility</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="panel">
+      <div class="container about-copy fade-up">
+        <div class="section-label">About</div>
+        <h2>Why Openbook <em>exists.</em></h2>
+        <p>
+          Openbook Health was built around a simple but important discovery: self-funded employers can be systematically overpaying for care even when purchasing through traditional PPO networks.
+        </p>
+        <p>
+          Using claims data and federally required hospital pricing disclosures, Openbook helps employers identify where that overpayment exists, how large it is, and what actions may be available in response.
+        </p>
+        <p>
+          Our work sits at the intersection of price transparency, employer healthcare strategy, direct contracting, and fiduciary decision-making. The goal is not more raw data. The goal is better purchasing decisions.
+        </p>
+        <div class="actions" style="margin-top:30px; margin-bottom:0;">
+          <a class="btn btn-primary" href="#contact">Work With Us</a>
+          <a class="btn btn-secondary" href="https://www.linkedin.com/company/104437380" target="_blank" rel="noopener">LinkedIn</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="cta">
+      <div class="container">
+        <div class="section-label">Get Started</div>
+        <h2>See whether your plan is <em>overpaying.</em></h2>
+        <p class="section-intro">
+          For qualifying self-funded employers, Openbook provides an initial review of high-spend procedures against published hospital pricing data to identify potential savings opportunity.
+        </p>
+        <div class="actions" style="justify-content:center; margin-top:32px;">
+          <a class="btn btn-primary" href="mailto:hello@openbookhealth.co?subject=Request%20Free%20Analysis">Request Free Analysis</a>
+          <a class="btn btn-secondary" href="mailto:hello@openbookhealth.co">hello@openbookhealth.co</a>
+        </div>
+        <div style="margin-top:40px;color:rgba(244,241,236,0.35);font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;">
+          SOUTH FLORIDA BASED · SERVING SELF-FUNDED EMPLOYERS NATIONALLY
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="#top" class="brand">
+            <img src="/openbook-health-wordmark-light.svg" alt="Openbook Health" />
+          </a>
+          <div class="footer-copy">Healthcare price intelligence for self-funded employers. We find the gap between what a plan is paying and what it should be paying.</div>
+        </div>
+        <div>
+          <div class="footer-title">Services</div>
+          <ul class="footer-links">
+            <li><a href="#how">Claims analysis</a></li>
+            <li><a href="#how">Price discovery</a></li>
+            <li><a href="#how">Gap analysis</a></li>
+            <li><a href="#how">Direct contracting strategy</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title">Company</div>
+          <ul class="footer-links">
+            <li><a href="#about">About</a></li>
+            <li><a href="#results">Results</a></li>
+            <li><a href="https://www.linkedin.com/company/104437380" target="_blank" rel="noopener">LinkedIn</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-title">Contact</div>
+          <ul class="footer-links">
+            <li><a href="mailto:hello@openbookhealth.co">hello@openbookhealth.co</a></li>
+            <li><a href="#contact">Request analysis</a></li>
+            <li><a href="#">South Florida, USA</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 Openbook Health. All rights reserved.</span>
+        <span>Built for Vercel deployment.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  </script>
 </body>
 </html>
